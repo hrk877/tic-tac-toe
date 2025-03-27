@@ -1,364 +1,378 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>〇✕ゲーム</title>
-
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            background-color: #f7f7f7;
-            color: #333;
-        }
-        h1 {
-            margin-top: 20px;
-            font-size: 2rem;
-            font-weight: 600;
-            color: #333;
-        }
-        #board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-gap: 10px;
-            margin: 30px auto;
-            width: 330px;
-        }
-        .cell {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            background: #fff;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            transition: background 0.3s ease, transform 0.2s ease;
-            cursor: pointer;
-        }
-        .cell:hover {
-            background: #f2f2f2;
-            transform: scale(1.05);
-        }
-        .cell.taken {
-            pointer-events: none;
-        }
-        #message {
-            font-size: 1.2rem;
-            margin-top: 15px;
-            font-weight: 500;
-            color: #333;
-        }
-        button {
-            margin-top: 30px;
-            padding: 12px 24px;
-            background-color: white;
-            color: #333;
-            border: 2px solid #333;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-            outline: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            height: 50px;
-        }
-        button:hover {
-            background-color: #f2f2f2;
-            transform: scale(1.05);
-        }
-        button:focus {
-            outline: none;
-        }
-        button:active {
-            transform: scale(0.98);
-        }
-        #resetButton {
-            border-color: black; /* リセットボタンの枠線を黒に変更 */
-        }
-        #secretButton {
-            display: none;
-            background-color: white;
-            color: #333;
-            border: 2px solid #333;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-            outline: none;
-        }
-        #secretButton:hover {
-            background-color: #f2f2f2;
-            transform: scale(1.05);
-        }
-        #secretButton:focus {
-            outline: none;
-        }
-        #secretButton:active {
-            transform: scale(0.98);
-        }
-        #resetButton i, #secretButton i {
-            font-size: 1.4rem; /* アイコンのサイズ調整 */
-        }
-
-        #quizContainer {
-            margin-top: 30px;
-        }
-
-        .quiz-question {
-            font-size: 1.5rem;
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
-
-        .quiz-option {
-            padding: 12px 24px;
-            margin: 5px;
-            background-color: white;
-            color: #333;
-            border: 2px solid #333;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-
-        .quiz-option:hover {
-            background-color: #f2f2f2;
-            transform: scale(1.05);
-        }
-
-        .quiz-option:active {
-            transform: scale(0.98);
-        }
-
-        #resultButton {
-            display: none;
-            margin-top: 30px;
-            padding: 12px 24px;
-            background-color: white;
-            color: #333;
-            border: 2px solid #333;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-
-        #resultButton:hover {
-            background-color: #f2f2f2;
-            transform: scale(1.05);
-        }
-
-    </style>
-    <!-- フォントアイコンの読み込み -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>〇✕ゲーム</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: #333;
+    }
+    h1 {
+      margin-top: 20px;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #333;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      margin: 30px auto;
+      width: 330px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      transition: background 0.3s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+    .cell:hover {
+      background: #f2f2f2;
+      transform: scale(1.05);
+    }
+    .cell.taken {
+      pointer-events: none;
+    }
+    #message {
+      font-size: 1.2rem;
+      margin-top: 15px;
+      font-weight: 500;
+      color: #333;
+    }
+    /* ボタン全般のスタイル */
+    button {
+      padding: 12px 24px;
+      background-color: white;
+      color: #333;
+      border: 2px solid #333;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 50px;
+    }
+    button:hover {
+      background-color: #f2f2f2;
+      transform: scale(1.05);
+    }
+    button:focus {
+      outline: none;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    #resetButton i, #secretButton i {
+      font-size: 1.4rem;
+    }
+    /* secretButton（→ボタン）は初期非表示。リセットボタンの右に配置 */
+    #secretButton {
+      display: none;
+      background-color: white;
+      color: #333;
+      border: 2px solid #333;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      outline: none;
+    }
+    #secretButton:hover {
+      background-color: #f2f2f2;
+      transform: scale(1.05);
+    }
+    #secretButton:focus {
+      outline: none;
+    }
+    #secretButton:active {
+      transform: scale(0.98);
+    }
+    /* リセットボタン、secretButton、正解数表示（漢字）を横並び・上下中央に配置 */
+    #buttonContainer {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    #finalMessage {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #333;
+      line-height: 50px;
+      margin: 0;
+    }
+    /* 下部に結果メッセージを中央揃えで表示 */
+    #resultMessage {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    /* クイズ関連 */
+    #quizContainer {
+      margin-top: 30px;
+    }
+    .quiz-question {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .quiz-option {
+      padding: 12px 24px;
+      margin: 5px;
+      background-color: white;
+      color: #333;
+      border: 2px solid #333;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .quiz-option:hover {
+      background-color: #f2f2f2;
+      transform: scale(1.05);
+    }
+    .quiz-option:active {
+      transform: scale(0.98);
+    }
+  </style>
+  <!-- フォントアイコンの読み込み -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>〇✕ゲーム</h1>
-    <div id="board"></div>
-    <p id="message">プレイヤー〇の番です</p>
+  <h1>〇✕ゲーム</h1>
+  <div id="board"></div>
+  <p id="message">プレイヤー〇の番です</p>
+  
+  <!-- リセットボタン、secretButton（→ボタン）、正解数表示用のメッセージを横並びに配置 -->
+  <div id="buttonContainer">
     <button id="resetButton" onclick="resetGame()"><i class="fas fa-redo"></i></button>
     <button id="secretButton"><i class="fas fa-arrow-right"></i></button>
+    <p id="finalMessage"></p>
+  </div>
+  
+  <!-- 結果メッセージを下部に中央揃えで表示 -->
+  <p id="resultMessage"></p>
+  
+  <div id="quizContainer" style="display: none;">
+    <p class="quiz-question" id="quizQuestion"></p>
+    <div id="quizOptions"></div>
+  </div>
 
-    <div id="quizContainer" style="display: none;">
-        <p class="quiz-question" id="quizQuestion"></p>
-        <div id="quizOptions"></div>
-    </div>
-    <button id="resultButton" onclick="showResult()">結果を見る</button>
+  <script>
+    const board = document.getElementById("board");
+    const message = document.getElementById("message");
+    const secretButton = document.getElementById("secretButton");
+    const quizContainer = document.getElementById("quizContainer");
+    const quizQuestion = document.getElementById("quizQuestion");
+    const quizOptions = document.getElementById("quizOptions");
+    const finalMessage = document.getElementById("finalMessage");
+    const resultMessage = document.getElementById("resultMessage");
 
-    <script>
-        const board = document.getElementById("board");
-        const message = document.getElementById("message");
-        const secretButton = document.getElementById("secretButton");
-        const quizContainer = document.getElementById("quizContainer");
-        const quizQuestion = document.getElementById("quizQuestion");
-        const quizOptions = document.getElementById("quizOptions");
-        const resultButton = document.getElementById("resultButton");
+    let currentPlayer = "〇";
+    let cells = Array(9).fill(null);
+    let clickOrder = [];
+    const winningPatterns = [
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縦
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
+      [0, 4, 8], [2, 4, 6]             // 斜め
+    ];
 
-        let currentPlayer = "〇";
-        let cells = Array(9).fill(null);
-        let clickOrder = [];
-        const winningPatterns = [
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縦
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
-            [0, 4, 8], [2, 4, 6]             // 斜め
-        ];
+    let quizIndex = 0;
+    let correctAnswers = 0;
+    const quizQuestions = [
+      {
+        question: "1番好きな食べ物は何でしょう？",
+        options: ["パスタ", "バナナ", "天ぷら"],
+        answer: "パスタ"
+      },
+      {
+        question: "趣味は何でしょう？",
+        options: ["ピアノ", "絵画", "裁縫"],
+        answer: "ピアノ"
+      },
+      {
+        question: "好きな季節は何でしょう？",
+        options: ["春", "秋", "冬"],
+        answer: "春"
+      },
+      {
+        question: "誕生日は何月でしょう？",
+        options: ["2月", "4月", "11月"],
+        answer: "4月"
+      },
+      {
+        question: "MBTIは何でしょう？",
+        options: ["INTP", "INFP", "INTJ"],
+        answer: "INFP"
+      },
+      {
+        question: "ぼくのヒーローは誰でしょう？",
+        options: ["パディントン", "ベイマックス", "ジョーカー"],
+        answer: "ベイマックス"
+      },
+      {
+        question: "飼っている犬の名前は何でしょう？",
+        options: ["ロビン", "ドク", "プチ"],
+        answer: "ロビン"
+      },
+      {
+        question: "行ってみたい国はどこでしょう？",
+        options: ["スイス", "イタリア", "フランス"],
+        answer: "イタリア"
+      },
+      {
+        question: "1番好きな韓国ドラマはなんでしょう？",
+        options: ["その年私たちは", "トッケビ", "ムービング"],
+        answer: "その年私たちは"
+      },
+      {
+        question: "好きなお笑い芸人は誰でしょう？",
+        options: ["バナナマン", "東京03", "とんねるず"],
+        answer: "東京03"
+      }
+    ];
 
-        let quizIndex = 0;
-        let correctAnswers = 0;
-        const quizQuestions = [
-            {
-                question: "1番好きな食べ物は何でしょう？",
-                options: ["パスタ", "バナナ", "天ぷら"],
-                answer: "パスタ"
-            },
-            {
-                question: "趣味は何でしょう？",
-                options: ["ピアノ", "絵画", "裁縫"],
-                answer: "ピアノ"
-            },
-            {
-                question: "好きな季節は何でしょう？",
-                options: ["春", "秋", "冬"],
-                answer: "春"
-            },
-            {
-                question: "誕生日は何月でしょう？",
-                options: ["2月", "4月", "11月"],
-                answer: "4月"
-            },
-            {
-                question: "MBTIは何でしょう？",
-                options: ["INTP", "INFP", "INTJ"],
-                answer: "INFP"
-            },
-            {
-                question: "ぼくのヒーローは誰でしょう？",
-                options: ["パディントン", "ベイマックス", "ジョーカー"],
-                answer: "ベイマックス"
-            },
-       　　 {
-                question: "飼っている犬の名前は何でしょう？",
-                options: ["ロビン", "ドク", "プチ"],
-                answer: "ロビン"
-            },
-        　　{
-                question: "行ってみたい国はどこでしょう？",
-                options: ["スイス", "イタリア", "フランス"],
-                answer: "イタリア"
-            },
-            {
-                question: "1番好きな韓国ドラマはなんでしょう？",
-                options: ["その年私たちは", "トッケビ", "ムービング"],
-                answer: "その年私たちは"
-            },
-            {
-                question: "好きなお笑い芸人は誰でしょう？",
-                options: ["バナナマン", "東京03", "とんねるず"],
-                answer: "東京03"
-            },
-        ];
+    function checkWinner() {
+      for (let pattern of winningPatterns) {
+        const [a, b, c] = pattern;
+        if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
+          return cells[a];
+        }
+      }
+      return cells.includes(null) ? null : "draw";
+    }
 
-        function checkWinner() {
-            for (let pattern of winningPatterns) {
-                const [a, b, c] = pattern;
-                if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
-                    return cells[a];
-                }
-            }
-            return cells.includes(null) ? null : "draw";
+    function handleClick(event) {
+      const index = event.target.dataset.index;
+      if (!cells[index]) {
+        cells[index] = currentPlayer;
+        event.target.textContent = currentPlayer;
+        event.target.classList.add("taken");
+
+        // クリック順を記録
+        clickOrder.push(index);
+
+        // Hパターンが完成したら、secretButton（→ボタン）を表示
+        if (clickOrder.length >= 7 && checkHPattern()) {
+          secretButton.style.display = 'inline-block';
         }
 
-        function handleClick(event) {
-            const index = event.target.dataset.index;
-            if (!cells[index]) {
-                cells[index] = currentPlayer;
-                event.target.textContent = currentPlayer;
-                event.target.classList.add("taken");
-
-                // クリック順番を記録
-                clickOrder.push(index);
-
-                // Hの形が完成したらボタンを表示
-                if (clickOrder.length >= 7 && checkHPattern()) {
-                    secretButton.style.display = 'inline-block'; // ボタン表示
-                }
-
-                let winner = checkWinner();
-                if (winner) {
-                    message.textContent = winner === "draw" ? "引き分け！" : `プレイヤー ${winner} の勝ち！`;
-                    board.querySelectorAll(".cell").forEach(cell => cell.removeEventListener("click", handleClick));
-                } else {
-                    currentPlayer = currentPlayer === "〇" ? "✕" : "〇";
-                    message.textContent = `プレイヤー${currentPlayer}の番です`;
-                }
-            }
+        let winner = checkWinner();
+        if (winner) {
+          message.textContent = winner === "draw" ? "引き分け！" : `プレイヤー ${winner} の勝ち！`;
+          board.querySelectorAll(".cell").forEach(cell => cell.removeEventListener("click", handleClick));
+        } else {
+          currentPlayer = currentPlayer === "〇" ? "✕" : "〇";
+          message.textContent = `プレイヤー${currentPlayer}の番です`;
         }
+      }
+    }
 
-        function checkHPattern() {
-            const hPattern = [0, 3, 6, 2, 5, 8, 4]; // クリック順
-            if (clickOrder.length < 7) return false;
+    function checkHPattern() {
+      const hPattern = [0, 3, 6, 2, 5, 8, 4]; // クリック順のパターン
+      if (clickOrder.length < 7) return false;
+      for (let i = 0; i < 7; i++) {
+        const currentCell = cells[hPattern[i]];
+        if (i % 2 === 0 && currentCell !== "〇") return false;
+        if (i % 2 === 1 && currentCell !== "✕") return false;
+      }
+      return true;
+    }
 
-            // 順番通りに〇✕が交互に並んでいるか確認
-            for (let i = 0; i < 7; i++) {
-                const currentCell = cells[hPattern[i]];
-                if (i % 2 === 0 && currentCell !== "〇") return false;
-                if (i % 2 === 1 && currentCell !== "✕") return false;
-            }
+    function createBoard() {
+      board.innerHTML = "";
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.addEventListener("click", handleClick);
+        board.appendChild(cell);
+      }
+      cells.fill(null);
+      clickOrder = [];
+      currentPlayer = "〇";
+      message.textContent = `プレイヤー〇の番です`;
+    }
 
-            return true;
-        }
+    function resetGame() {
+      createBoard();
+      message.textContent = `プレイヤー〇の番です`;
+      secretButton.style.display = 'none';
+      finalMessage.textContent = "";
+      resultMessage.textContent = "";
+      // クイズの初期化
+      quizIndex = 0;
+      correctAnswers = 0;
+      quizContainer.style.display = 'none';
+    }
 
-        function createBoard() {
-            board.innerHTML = "";
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement("div");
-                cell.classList.add("cell");
-                cell.dataset.index = i;
-                cell.addEventListener("click", handleClick);
-                board.appendChild(cell);
-            }
-            cells.fill(null);
-            clickOrder = [];
-            currentPlayer = "〇";
-            message.textContent = `プレイヤー〇の番です`;
-        }
+    function startQuiz() {
+      quizContainer.style.display = 'block';
+      secretButton.style.display = 'none';
+      displayQuiz();
+    }
 
-        function resetGame() {
-            createBoard();
-            message.textContent = `プレイヤー〇の番です`;
-            secretButton.style.display = 'none'; // 使わない場合は非表示に
-            resultButton.style.display = 'none';
-        }
+    function displayQuiz() {
+      const currentQuiz = quizQuestions[quizIndex];
+      quizQuestion.textContent = currentQuiz.question;
+      quizOptions.innerHTML = "";
+      currentQuiz.options.forEach(option => {
+        const button = document.createElement("button");
+        button.classList.add("quiz-option");
+        button.textContent = option;
+        button.addEventListener("click", () => checkAnswer(option));
+        quizOptions.appendChild(button);
+      });
+    }
 
-        function startQuiz() {
-            quizContainer.style.display = 'block';
-            secretButton.style.display = 'none'; // クイズ開始後にボタンを隠す
-            displayQuiz();
-        }
+    function checkAnswer(selectedOption) {
+      const currentQuiz = quizQuestions[quizIndex];
+      if (selectedOption === currentQuiz.answer) {
+        correctAnswers++;
+      }
+      quizIndex++;
+      if (quizIndex < quizQuestions.length) {
+        displayQuiz();
+      } else {
+        showResult();
+      }
+    }
 
-        function displayQuiz() {
-            const currentQuiz = quizQuestions[quizIndex];
-            quizQuestion.textContent = currentQuiz.question;
-            quizOptions.innerHTML = "";
-            currentQuiz.options.forEach(option => {
-                const button = document.createElement("button");
-                button.classList.add("quiz-option");
-                button.textContent = option;
-                button.addEventListener("click", () => checkAnswer(option));
-                quizOptions.appendChild(button);
-            });
-        }
+    function showResult() {
+      quizContainer.style.display = 'none';
+      // 正解数は従来どおり表示
+      finalMessage.textContent = `正解数: ${correctAnswers}`;
+      // 10問全問正解なら
+      if (correctAnswers === quizQuestions.length) {
+        resultMessage.textContent = "10問正解で、大変よくできました。";
+      } else {
+        resultMessage.textContent = "0から9問正解で、もう一度挑戦しましょう。";
+      }
+    }
 
-        function checkAnswer(selectedOption) {
-            const currentQuiz = quizQuestions[quizIndex];
-            if (selectedOption === currentQuiz.answer) {
-                correctAnswers++;
-            }
+    // secretButton をクリックしたらクイズがスタートする
+    secretButton.addEventListener("click", startQuiz);
 
-            quizIndex++;
-            if (quizIndex < quizQuestions.length) {
-                displayQuiz();
-            } else {
-                showResult();
-            }
-        }
-
-        function showResult() {
-            quizContainer.style.display = 'none';
-            resultButton.style.display = 'inline-block';
-            resultButton.textContent = `正解数: ${correctAnswers}`;
-        }
-
-        secretButton.addEventListener("click", startQuiz);
-        createBoard();
-    </script>
+    createBoard();
+  </script>
 </body>
 </html>
