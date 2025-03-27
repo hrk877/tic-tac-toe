@@ -61,7 +61,7 @@
         let currentPlayer = "〇";
         let cells = Array(9).fill(null);
         let secretPattern = []; // Hを作るためのマス目の順番を保存
-        const secretPatternCoordinates = [0, 6, 2, 4, 8]; // Hの形を作るマス目の順番
+        const secretPatternCoordinates = [0, 3, 6, 2, 5, 8, 4]; // 左上→左→左下→右上→右→右下→真ん中
 
         function checkWinner() {
             const winningPatterns = [
@@ -88,7 +88,7 @@
                 event.target.classList.add("taken");
 
                 // Hの形を作るためのマス目を押しているかを確認
-                if (secretPatternCoordinates.includes(index)) {
+                if (secretPatternCoordinates.includes(index) && !secretPattern.includes(index)) {
                     secretPattern.push(index);
                 }
 
@@ -109,8 +109,8 @@
         }
 
         function isHCompleted() {
-            // secretPatternがHの形（左上→左下→右上→真ん中→右下）の順番で押されたかを確認
-            return secretPatternCoordinates.every(coord => secretPattern.includes(coord));
+            // secretPatternCoordinatesに定義された順番通りに全てのマス目が押されているかをチェック
+            return secretPatternCoordinates.every((coord, index) => secretPattern[index] === coord);
         }
 
         function createBoard() {
