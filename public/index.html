@@ -8,21 +8,17 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
         }
         #board {
             display: grid;
+            grid-template-columns: repeat(3, 100px);
             grid-gap: 5px;
-            margin-top: 20px;
+            margin: 20px auto;
+            width: 315px;
         }
         .cell {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -38,89 +34,49 @@
             font-size: 1.5em;
             margin-top: 10px;
         }
+        #secretButton {
+            display: none;
+            margin-top: 20px;
+            padding: 15px 30px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1>〇✕ゲーム</h1>
-    
-    <label for="gridSize">盤面サイズ:</label>
-    <select id="gridSize">
-        <option value="3">3×3</option>
-        <option value="4">4×4</option>
-        <option value="5">5×5</option>
-    </select>
-    <button onclick="resetGame()">リセット</button>
-
     <div id="board"></div>
     <p id="message">プレイヤー〇の番です</p>
+    <button onclick="resetGame()">リセット</button>
+    <button id="secretButton" onclick="onSecretButtonClick()">秘密のボタン</button>
 
     <script>
         const board = document.getElementById("board");
         const message = document.getElementById("message");
-        const gridSizeSelect = document.getElementById("gridSize");
-        let gridSize = 3;
+        const secretButton = document.getElementById("secretButton");
         let currentPlayer = "〇";
-        let cells = [];
-        const winCount = 3; // 何個揃えば勝ちか
+        let cells = Array(9).fill(null);
+        let secretPattern = []; // Hを作るためのマス目の順番を保存
+        const secretPatternCoordinates = [0, 3, 4, 6, 8]; // Hの形を作るマス目の順番
 
         function checkWinner() {
-            function checkLine(indices) {
-                for (let i = 0; i <= indices.length - winCount; i++) {
-                    const slice = indices.slice(i, i + winCount);
-                    if (slice.every(idx => cells[idx] === "〇")) return "〇";
-                    if (slice.every(idx => cells[idx] === "✕")) return "✕";
-                }
-                return null;
-            }
-            
-            // 勝利判定用のパターン作成
-            let patterns = [];
-            
-            // 横のライン
-            for (let r = 0; r < gridSize; r++) {
-                let row = [];
-                for (let c = 0; c < gridSize; c++) {
-                    row.push(r * gridSize + c);
-                }
-                patterns.push(row);
-            }
-            
-            // 縦のライン
-            for (let c = 0; c < gridSize; c++) {
-                let col = [];
-                for (let r = 0; r < gridSize; r++) {
-                    col.push(r * gridSize + c);
-                }
-                patterns.push(col);
-            }
-            
-            // 斜めのライン（左上→右下）
-            for (let r = 0; r <= gridSize - winCount; r++) {
-                for (let c = 0; c <= gridSize - winCount; c++) {
-                    let diag1 = [];
-                    for (let i = 0; i < winCount; i++) {
-                        diag1.push((r + i) * gridSize + (c + i));
-                    }
-                    patterns.push(diag1);
+            const winningPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縦
+                [0, 4, 8], [2, 4, 6]             // 斜め
+            ];
+
+            for (let pattern of winningPatterns) {
+                const [a, b, c] = pattern;
+                if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
+                    return cells[a];
                 }
             }
-            
-            // 斜めのライン（右上→左下）
-            for (let r = 0; r <= gridSize - winCount; r++) {
-                for (let c = winCount - 1; c < gridSize; c++) {
-                    let diag2 = [];
-                    for (let i = 0; i < winCount; i++) {
-                        diag2.push((r + i) * gridSize + (c - i));
-                    }
-                    patterns.push(diag2);
-                }
-            }
-            
-            for (let pattern of patterns) {
-                let winner = checkLine(pattern);
-                if (winner) return winner;
-            }
-            
+
             return cells.includes(null) ? null : "draw";
         }
 
@@ -130,6 +86,16 @@
                 cells[index] = currentPlayer;
                 event.target.textContent = currentPlayer;
                 event.target.classList.add("taken");
+
+                // Hの形ができたか確認
+                if (secretPatternCoordinates.includes(index)) {
+                    secretPattern.push(index);
+                }
+
+                // Hが完成したかチェック
+                if (isHCompleted()) {
+                    secretButton.style.display = "inline-block"; // ボタンを表示
+                }
 
                 let winner = checkWinner();
                 if (winner) {
@@ -142,29 +108,35 @@
             }
         }
 
-        function createBoard() {
-            gridSize = parseInt(gridSizeSelect.value);
-            board.style.gridTemplateColumns = `repeat(${gridSize}, 80px)`;
-            board.innerHTML = "";
-            cells = Array(gridSize * gridSize).fill(null);
+        function isHCompleted() {
+            // secretPatternの中身がHの形を作っているかチェック
+            return secretPatternCoordinates.every(coord => secretPattern.includes(coord));
+        }
 
-            for (let i = 0; i < gridSize * gridSize; i++) {
+        function createBoard() {
+            board.innerHTML = "";
+            for (let i = 0; i < 9; i++) {
                 const cell = document.createElement("div");
                 cell.classList.add("cell");
                 cell.dataset.index = i;
                 cell.addEventListener("click", handleClick);
                 board.appendChild(cell);
             }
-
+            cells.fill(null);
             currentPlayer = "〇";
             message.textContent = "プレイヤー〇の番です";
+            secretPattern = []; // Hのパターンリセット
+            secretButton.style.display = "none"; // ボタン非表示
         }
 
         function resetGame() {
             createBoard();
         }
 
-        gridSizeSelect.addEventListener("change", resetGame);
+        function onSecretButtonClick() {
+            alert("秘密のボタンが押されました！");
+        }
+
         createBoard();
     </script>
 </body>
