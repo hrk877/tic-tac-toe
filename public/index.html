@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>〇✕ゲーム</title>
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -105,6 +106,56 @@
         #resetButton i, #secretButton i {
             font-size: 1.4rem; /* アイコンのサイズ調整 */
         }
+
+        #quizContainer {
+            margin-top: 30px;
+        }
+
+        .quiz-question {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .quiz-option {
+            padding: 12px 24px;
+            margin: 5px;
+            background-color: white;
+            color: #333;
+            border: 2px solid #333;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            background-color: #f2f2f2;
+            transform: scale(1.05);
+        }
+
+        .quiz-option:active {
+            transform: scale(0.98);
+        }
+
+        #resultButton {
+            display: none;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background-color: white;
+            color: #333;
+            border: 2px solid #333;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        #resultButton:hover {
+            background-color: #f2f2f2;
+            transform: scale(1.05);
+        }
+
     </style>
     <!-- フォントアイコンの読み込み -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -116,10 +167,20 @@
     <button id="resetButton" onclick="resetGame()"><i class="fas fa-redo"></i></button>
     <button id="secretButton"><i class="fas fa-arrow-right"></i></button>
 
+    <div id="quizContainer" style="display: none;">
+        <p class="quiz-question" id="quizQuestion"></p>
+        <div id="quizOptions"></div>
+    </div>
+    <button id="resultButton" onclick="showResult()">結果を見る</button>
+
     <script>
         const board = document.getElementById("board");
         const message = document.getElementById("message");
         const secretButton = document.getElementById("secretButton");
+        const quizContainer = document.getElementById("quizContainer");
+        const quizQuestion = document.getElementById("quizQuestion");
+        const quizOptions = document.getElementById("quizOptions");
+        const resultButton = document.getElementById("resultButton");
 
         let currentPlayer = "〇";
         let cells = Array(9).fill(null);
@@ -128,6 +189,36 @@
             [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縦
             [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
             [0, 4, 8], [2, 4, 6]             // 斜め
+        ];
+
+        let quizIndex = 0;
+        let correctAnswers = 0;
+        const quizQuestions = [
+            {
+                question: "好きな食べ物は何でしょう？",
+                options: ["パスタ", "ラーメン", "焼き肉"],
+                answer: "パスタ"
+            },
+            {
+                question: "好きな果物は何でしょう？",
+                options: ["バナナ", "みかん", "リンゴ"],
+                answer: "バナナ"
+            },
+            {
+                question: "好きな季節は何でしょう？",
+                options: ["春", "秋", "冬"],
+                answer: "春"
+            },
+            {
+                question: "誕生日の月と日をたすといくつでしょう？",
+                options: ["22", "24", "26"],
+                answer: "26"
+            },
+            {
+                question: "飼っている犬の名前は何でしょう？",
+                options: ["ロビン", "ドク", "プチ"],
+                answer: "ロビン"
+            }
         ];
 
         function checkWinner() {
@@ -166,7 +257,6 @@
             }
         }
 
-        // Hの形が完成したか確認する関数
         function checkHPattern() {
             const hPattern = [0, 3, 6, 2, 5, 8, 4]; // クリック順
             if (clickOrder.length < 7) return false;
@@ -193,14 +283,56 @@
             cells.fill(null);
             clickOrder = [];
             currentPlayer = "〇";
-            message.textContent = "プレイヤー〇の番です";
-            secretButton.style.display = "none"; // ボタン非表示
+            message.textContent = `プレイヤー〇の番です`;
         }
 
         function resetGame() {
             createBoard();
+            message.textContent = `プレイヤー〇の番です`;
+            secretButton.style.display = 'none'; // 使わない場合は非表示に
+            resultButton.style.display = 'none';
         }
 
+        function startQuiz() {
+            quizContainer.style.display = 'block';
+            secretButton.style.display = 'none'; // クイズ開始後にボタンを隠す
+            displayQuiz();
+        }
+
+        function displayQuiz() {
+            const currentQuiz = quizQuestions[quizIndex];
+            quizQuestion.textContent = currentQuiz.question;
+            quizOptions.innerHTML = "";
+            currentQuiz.options.forEach(option => {
+                const button = document.createElement("button");
+                button.classList.add("quiz-option");
+                button.textContent = option;
+                button.addEventListener("click", () => checkAnswer(option));
+                quizOptions.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedOption) {
+            const currentQuiz = quizQuestions[quizIndex];
+            if (selectedOption === currentQuiz.answer) {
+                correctAnswers++;
+            }
+
+            quizIndex++;
+            if (quizIndex < quizQuestions.length) {
+                displayQuiz();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizContainer.style.display = 'none';
+            resultButton.style.display = 'inline-block';
+            resultButton.textContent = `正解数: ${correctAnswers}`;
+        }
+
+        secretButton.addEventListener("click", startQuiz);
         createBoard();
     </script>
 </body>
