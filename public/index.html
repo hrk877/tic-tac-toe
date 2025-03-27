@@ -6,15 +6,25 @@
     <title>〇✕ゲーム</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+        h1 {
+            margin-top: 20px;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #333;
         }
         #board {
             display: grid;
             grid-template-columns: repeat(3, 100px);
-            grid-gap: 5px;
-            margin: 20px auto;
-            width: 315px;
+            grid-gap: 10px;
+            margin: 30px auto;
+            width: 330px;
         }
         .cell {
             width: 100px;
@@ -22,61 +32,111 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2em;
-            background: lightgray;
+            font-size: 2rem;
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: background 0.3s ease, transform 0.2s ease;
             cursor: pointer;
-            border: 2px solid black;
+        }
+        .cell:hover {
+            background: #f2f2f2;
+            transform: scale(1.05);
         }
         .cell.taken {
             pointer-events: none;
         }
         #message {
-            font-size: 1.5em;
-            margin-top: 10px;
+            font-size: 1.2rem;
+            margin-top: 15px;
+            font-weight: 500;
+            color: #333;
+        }
+        button {
+            margin-top: 30px;
+            padding: 12px 24px;
+            background-color: white;
+            color: #333;
+            border: 2px solid #333;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+        }
+        button:hover {
+            background-color: #f2f2f2;
+            transform: scale(1.05);
+        }
+        button:focus {
+            outline: none;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #resetButton {
+            border-color: black; /* リセットボタンの枠線を黒に変更 */
         }
         #secretButton {
             display: none;
-            margin-top: 20px;
-            padding: 15px 30px;
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 1.5em;
+            background-color: white;
+            color: #333;
+            border: 2px solid #333;
+            border-radius: 50px;
+            font-size: 1.2rem;
             cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            outline: none;
+        }
+        #secretButton:hover {
+            background-color: #f2f2f2;
+            transform: scale(1.05);
+        }
+        #secretButton:focus {
+            outline: none;
+        }
+        #secretButton:active {
+            transform: scale(0.98);
+        }
+        #resetButton i, #secretButton i {
+            font-size: 1.4rem; /* アイコンのサイズ調整 */
         }
     </style>
+    <!-- フォントアイコンの読み込み -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <h1>〇✕ゲーム</h1>
     <div id="board"></div>
     <p id="message">プレイヤー〇の番です</p>
-    <button onclick="resetGame()">リセット</button>
-    <button id="secretButton" onclick="onSecretButtonClick()">秘密のボタン</button>
+    <button id="resetButton" onclick="resetGame()"><i class="fas fa-redo"></i></button>
+    <button id="secretButton"><i class="fas fa-arrow-right"></i></button>
 
     <script>
         const board = document.getElementById("board");
         const message = document.getElementById("message");
         const secretButton = document.getElementById("secretButton");
+
         let currentPlayer = "〇";
         let cells = Array(9).fill(null);
-        let secretPattern = []; // Hを作るためのマス目の順番を保存
-        const secretPatternCoordinates = [0, 3, 6, 2, 5, 8, 4]; // 左上→左→左下→右上→右→右下→真ん中
+        let clickOrder = [];
+        const winningPatterns = [
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縦
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
+            [0, 4, 8], [2, 4, 6]             // 斜め
+        ];
 
         function checkWinner() {
-            const winningPatterns = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縦
-                [0, 4, 8], [2, 4, 6]             // 斜め
-            ];
-
             for (let pattern of winningPatterns) {
                 const [a, b, c] = pattern;
                 if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
                     return cells[a];
                 }
             }
-
             return cells.includes(null) ? null : "draw";
         }
 
@@ -87,14 +147,12 @@
                 event.target.textContent = currentPlayer;
                 event.target.classList.add("taken");
 
-                // Hの形を作るためのマス目を押しているかを確認
-                if (secretPatternCoordinates.includes(index) && !secretPattern.includes(index)) {
-                    secretPattern.push(index);
-                }
+                // クリック順番を記録
+                clickOrder.push(index);
 
-                // Hが完成したかチェック
-                if (isHCompleted()) {
-                    secretButton.style.display = "inline-block"; // ボタンを表示
+                // Hの形が完成したらボタンを表示
+                if (clickOrder.length >= 7 && checkHPattern()) {
+                    secretButton.style.display = 'inline-block'; // ボタン表示
                 }
 
                 let winner = checkWinner();
@@ -108,9 +166,19 @@
             }
         }
 
-        function isHCompleted() {
-            // secretPatternCoordinatesに定義された順番通りに全てのマス目が押されているかをチェック
-            return secretPatternCoordinates.every((coord, index) => secretPattern[index] === coord);
+        // Hの形が完成したか確認する関数
+        function checkHPattern() {
+            const hPattern = [0, 3, 6, 2, 5, 8, 4]; // クリック順
+            if (clickOrder.length < 7) return false;
+
+            // 順番通りに〇✕が交互に並んでいるか確認
+            for (let i = 0; i < 7; i++) {
+                const currentCell = cells[hPattern[i]];
+                if (i % 2 === 0 && currentCell !== "〇") return false;
+                if (i % 2 === 1 && currentCell !== "✕") return false;
+            }
+
+            return true;
         }
 
         function createBoard() {
@@ -123,18 +191,14 @@
                 board.appendChild(cell);
             }
             cells.fill(null);
+            clickOrder = [];
             currentPlayer = "〇";
             message.textContent = "プレイヤー〇の番です";
-            secretPattern = []; // Hのパターンリセット
             secretButton.style.display = "none"; // ボタン非表示
         }
 
         function resetGame() {
             createBoard();
-        }
-
-        function onSecretButtonClick() {
-            alert("秘密のボタンが押されました！");
         }
 
         createBoard();
