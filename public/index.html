@@ -81,7 +81,7 @@
     #resetButton i, #secretButton i {
       font-size: 1.4rem;
     }
-    /* secretButton（→ボタン）は初期非表示。リセットボタンの右に配置 */
+    /* シークレットボタンは初期非表示。 */
     #secretButton {
       display: none;
       background-color: white;
@@ -103,7 +103,8 @@
     #secretButton:active {
       transform: scale(0.98);
     }
-    /* リセットボタン、secretButton、正解数表示（漢字）を横並び・上下中央に配置 */
+    /* ボタンコンテナ：初期状態はリセットボタンのみ表示され中央に配置、
+       シークレットボタンや正解数が表示されると横並びになる */
     #buttonContainer {
       margin-top: 30px;
       display: flex;
@@ -118,6 +119,8 @@
       color: #333;
       line-height: 50px;
       margin: 0;
+      /* 初期状態は非表示。クイズ終了時に正解数がある場合は表示 */
+      display: none;
     }
     /* 下部に結果メッセージを中央揃えで表示 */
     #resultMessage {
@@ -162,7 +165,7 @@
   <div id="board"></div>
   <p id="message">プレイヤー〇の番です</p>
   
-  <!-- リセットボタン、secretButton（→ボタン）、正解数表示用のメッセージを横並びに配置 -->
+  <!-- リセットボタン、シークレットボタン、正解数表示用のメッセージを横並びに配置 -->
   <div id="buttonContainer">
     <button id="resetButton" onclick="resetGame()"><i class="fas fa-redo"></i></button>
     <button id="secretButton"><i class="fas fa-arrow-right"></i></button>
@@ -273,7 +276,7 @@
 
         // Hパターンが完成したら、secretButton（→ボタン）を表示
         if (clickOrder.length >= 7 && checkHPattern()) {
-          secretButton.style.display = 'inline-block';
+          secretButton.style.display = 'inline-flex';
         }
 
         let winner = checkWinner();
@@ -317,6 +320,7 @@
       createBoard();
       message.textContent = `プレイヤー〇の番です`;
       secretButton.style.display = 'none';
+      finalMessage.style.display = 'none';
       finalMessage.textContent = "";
       resultMessage.textContent = "";
       // クイズの初期化
@@ -359,8 +363,9 @@
 
     function showResult() {
       quizContainer.style.display = 'none';
-      // 正解数は従来どおり表示
+      // 正解数を表示
       finalMessage.textContent = `正解数: ${correctAnswers}`;
+      finalMessage.style.display = 'block';
       // 10問全問正解なら
       if (correctAnswers === quizQuestions.length) {
         resultMessage.textContent = "大変よくできました。";
