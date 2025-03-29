@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>バンドプロジェクト管理</title>
+  <script type="module">
+    // Firebase SDK のインポート
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Firebase 設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyDe8W8YUhedHUesbZwGQWLKAA7Yz2mDmWI",
+      authDomain: "bandmatch-877.firebaseapp.com",
+      projectId: "bandmatch-877",
+      storageBucket: "bandmatch-877.firebasestorage.app",
+      messagingSenderId: "338150052178",
+      appId: "1:338150052178:web:6338b33129d515e2a06a8b",
+      measurementId: "G-PND9Z1DJZD"
+    };
+
+    // Firebase 初期化
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      const projectForm = document.getElementById("projectForm");
+      const projectList = document.getElementById("projectList");
+
+      // Firestoreからプロジェクトを取得
+      function loadProjects() {
+        onSnapshot(collection(db, "projects"), (snapshot) => {
+          projectList.innerHTML = "";
+          snapshot.forEach((doc) => {
+            const project = doc.data();
+            displayProject(doc.id, project);
+          });
+        });
+      }
+
+      // プロジェクト表示
+      function displayProject(id, project) {
+        const projectBlock = document.createElement("div");
+        projectBlock.classList.add("project-block");
+        projectBlock.dataset.id = id;
+        projectBlock.dataset.password = project.password;
+
+        projectBlock.innerHTML = `
+          <h3>${project.songName}</h3>
+          <p>ライブ日: ${project.liveDate}</p>
+          <p>募集楽器: ${project.instruments || "なし"}</p>
+          <button class="edit-btn">編集</button>
+          <button class="delete-btn">削除</button>
+        `;
+
+        // 削除処理
+        projectBlock.querySelector(".delete-btn").addEventListener("click", async function () {
+          const inputPassword = prompt("パスワードを入力してください:");
+          if (inputPassword === project.password) {
+            await deleteDoc(doc(db, "projects", id));
+          } else {
+            alert("パスワードが違います。");
+          }
+        });
+
+        // 編集処理
+        projectBlock.querySelector(".edit-btn").addEventListener("click", async function () {
+          const inputPassword = prompt("パスワードを入力してください:");
+          if (inputPassword === project.password) {
+            const newSongName = prompt("新しい曲名:", project.songName);
+            const newLiveDate = prompt("新しいライブ日:", project.liveDate);
+            const newInstruments = prompt("新しい募集楽器（カンマ区切りで入力）:", project.instruments);
+
+            if (newSongName && newLiveDate) {
+              await updateDoc(doc(db, "projects", id), {
+                songName: newSongName,
+                liveDate: newLiveDate,
+                instruments: newInstruments
+              });
+            }
+          } else {
+            alert("パスワードが違います。");
+          }
+        });
+
+        projectList.appendChild(projectBlock);
+      }
+
+      // プロジェクトの追加
+      projectForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const songName = document.getElementById("songName").value;
+        const liveDate = document.getElementById("liveDate").value;
+        const password = document.getElementById("password").value;
+
+        // 選択された楽器を取得
+        const selectedInstruments = Array.from(document.querySelectorAll('input[name="instrument"]:checked'))
+          .map(checkbox => checkbox.value)
+          .join(", ");
+
+        if (songName.trim() === "" || liveDate.trim() === "" || password.trim() === "") {
+          alert("すべての項目を入力してください。");
+          return;
+        }
+
+        await addDoc(collection(db, "projects"), {
+          songName,
+          liveDate,
+          instruments: selectedInstruments,
+          password
+        });
+
+        projectForm.reset();
+      });
+
+      loadProjects();
+    });
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .btn {
+      padding: 10px 20px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .project-block {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>バンドプロジェクト管理</h1>
+  </header>
+  <div class="container">
+    <div class="create-form">
+      <h2>新規プロジェクト作成</h2>
+      <form id="projectForm">
+        <div class="form-group">
+          <label for="songName">曲名:</label>
+          <input type="text" id="songName" required>
+        </div>
+        <div class="form-group">
+          <label for="liveDate">ライブ日:</label>
+          <input type="date" id="liveDate" required>
+        </div>
+        <div class="form-group">
+          <label>募集楽器:</label><br>
+          <input type="checkbox" name="instrument" value="ギター"> ギター
+          <input type="checkbox" name="instrument" value="キーボード"> キーボード
+          <input type="checkbox" name="instrument" value="ベース"> ベース
+          <input type="checkbox" name="instrument" value="カホン"> カホン
+          <input type="checkbox" name="instrument" value="ヴァイオリン"> ヴァイオリン
+          <input type="checkbox" name="instrument" value="フルート"> フルート
+          <input type="checkbox" name="instrument" value="トランペット"> トランペット
+        </div>
+        <div class="form-group">
+          <label for="password">パスワード:</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit" class="btn">プロジェクト追加</button>
+      </form>
+    </div>
+    <div id="projectList"></div>
+  </div>
+</body>
+</html>
